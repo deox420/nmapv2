@@ -24,3 +24,18 @@ Chronological human-readable log. Newest entries at the bottom of each day.
 3. **P24** Honeypot / tarpit detection (NSE + heuristics).
 4. **P15** Probe diagnostics telemetry (why a probe failed).
 5. **P06** SARIF/OCSF/STIX exporters (builds on P05 JSON).
+
+### Session 1 — CI hygiene
+- Imported nmap tree carried `.github/workflows/build.yml` (full multiplatform release autobuild). Its
+  Windows-MSVC / macOS jobs fail in the fork (no Npcap SDK / signing secrets). Scoped build.yml to
+  `workflow_dispatch` only and added `fork-ci.yml` (Linux ./configure && make + smoke + improvement tests)
+  as the meaningful PR gate. Explained on PR #1. sourcery-ai review-guide comment = informational, no action.
+
+### Session 1 — P05 DONE (native JSON output `-oJ`)
+- Self-contained writer `output_json.{cc,h}` reads in-memory Target/PortList/serviceDeductions/FPR at
+  run-open / per-host / run-close. Robust `json_escape_into()` for untrusted banners. Wired into nmap.cc
+  (option, open, run-open, per-host) and output.cc (run-close). Makefile OBJS updated.
+- Tested vs real localhost python HTTP service (-sV → full service+CPE) and a deterministic quote/backslash/
+  TAB escape round-trip. Smoke + aggregate suite green. Documented in docs/improvements/P05.md; usage updated.
+- Lab finding: docker registry blobs blocked (403) → use local python services. dockerd starts but images
+  can't be pulled.

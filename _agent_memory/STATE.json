@@ -5,16 +5,16 @@
   "work_branch": "claude/nmap-enhanced-fork-yn7y8t",
   "upstream_nmap": "https://github.com/nmap/nmap.git",
   "upstream_nmap_commit": "4c45907f76511ff92d21d71acef76f9e0a4cde80",
-  "proposal_actual": "P05",
-  "fase_actual": "setup",
+  "proposal_actual": "P14",
+  "fase_actual": "pending-start",
   "rama": "claude/nmap-enhanced-fork-yn7y8t",
   "ultimo_commit_sha": null,
-  "global_pct": 0,
+  "global_pct": 3,
   "session_mode": "Foundation + depth-first (user-chosen 2026-06-15)",
   "memory_location_note": "Memory kept INSIDE the repo (committed) because this is an ephemeral cloud container — only committed+pushed content survives context renewal / container reclaim. This adapts the prompt's 'outside the repo' instruction to the actual environment.",
   "propuestas": {
     "P01": "PENDING", "P02": "PENDING", "P03": "PENDING", "P04": "PENDING",
-    "P05": "PENDING", "P06": "PENDING", "P07": "PENDING", "P08": "PENDING",
+    "P05": "DONE", "P06": "PENDING", "P07": "PENDING", "P08": "PENDING",
     "P09": "PENDING", "P10": "PENDING", "P11": "PENDING", "P12": "PENDING",
     "P13": "PENDING", "P14": "PENDING", "P15": "PENDING", "P16": "PENDING",
     "P17": "PENDING", "P18": "PENDING", "P19": "PENDING", "P20": "PENDING",
@@ -24,5 +24,5 @@
     "P33": "PENDING", "P34": "PENDING", "P35": "PENDING", "P36": "PENDING"
   },
   "implementation_order_planned": ["P05", "P14", "P24", "P15", "P06"],
-  "notas_para_mi_yo_futuro": "Foundation in progress. Baseline build running (see /tmp/baseline-build.log). Next concrete step: confirm baseline build OK, capture smoke scan of localhost as no-regression reference, then start P05 (native JSON output -oJ) phase A (design). Implementation order chosen: P05 -> P14 -> P24 -> P15 -> P06. Memory lives in repo at _agent_memory/."
+  "notas_para_mi_yo_futuro": "P05 (native JSON -oJ) is DONE: built, tested vs real localhost HTTP service + deterministic escape test, documented (docs/improvements/P05.md), usage updated. Foundation (fork import, baseline build, fork-ci.yml, _agent_memory) all committed+pushed on branch claude/nmap-enhanced-fork-yn7y8t (PR #1, draft). Upstream multiplatform build.yml scoped to manual; fork-ci.yml is the gate. NEXT: start P14 (per-detection confidence scoring) phase A. Lab note: docker registry blobs blocked (403) — use python local services; start dockerd via 'sudo dockerd &' if a container is truly needed. Build recipe: ./configure --without-zenmap --without-ndiff && make -j4. Run tests: bash tests/improvements/run-all.sh."
 }
