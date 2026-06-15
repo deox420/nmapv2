@@ -67,6 +67,7 @@
 
 #include "nmap.h"
 #include "output.h"
+#include "output_json.h"
 #include "osscan.h"
 #include "osscan2.h"
 #include "NmapOps.h"
@@ -2554,6 +2555,17 @@ void printfinaloutput() {
   xml_end_tag(); /* nmaprun */
   xml_newline();
   log_flush_all();
+
+  /* P05: close the native JSON document with runstats. mytime holds the ctime
+   * of the finish (set above when n_ctime succeeded); pass NULL otherwise. */
+  if (json_output_active()) {
+    unsigned int up = o.numhosts_up;
+    unsigned int total = o.numhosts_scanned;
+    unsigned int down = (total >= up) ? (total - up) : 0;
+    json_run_close(up, down, total, o.TimeSinceStart(&tv),
+                   timep, err ? NULL : mytime, "success");
+    json_close_output();
+  }
 }
 
 /* A record consisting of a data file name ("nmap-services", "nmap-os-db",

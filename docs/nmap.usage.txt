@@ -86,7 +86,8 @@ FIREWALL/IDS EVASION AND SPOOFING:
 OUTPUT:
   -oN/-oX/-oS/-oG <file>: Output scan in normal, XML, s|<rIpt kIddi3,
      and Grepable format, respectively, to the given filename.
-  -oA <basename>: Output in the three major formats at once
+  -oJ <file>: Output scan in native JSON format ('-' for stdout)
+  -oA <basename>: Output in the major formats at once (incl. .json)
   -v: Increase verbosity level (use -vv or more for greater effect)
   -d: Increase debugging level (use -dd or more for greater effect)
   --reason: Display the reason a port is in a particular state
