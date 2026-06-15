@@ -135,3 +135,9 @@ stamp-h1
 /zenmap/install_scripts/windows/*.pkg.tar.zst
 /zenmap/install_scripts/windows/tmp.cfg
 /zenmap/zenmapCore/data/locale/*/
+
+# --- nmapv2 fork additions ---
+# Build-generated manfiles
+libpcap/*.manfile
+# Local test outputs (keep scripts + expected/, ignore live run artifacts)
+tests/improvements/**/out/
