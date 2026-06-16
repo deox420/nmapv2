@@ -23,7 +23,8 @@ Fork base: upstream Nmap `@4c45907f` (see `.upstream-nmap-commit`). License: NPS
 | P05 | Native JSON output (`-oJ`)                     | **DONE** | [doc](docs/improvements/P05.md) | [test](tests/improvements/P05/run.sh) |
 | P14 | Per-detection confidence / reliability scoring | **DONE** | [doc](docs/improvements/P14.md) | [test](tests/improvements/P14/run.sh) |
 | P24 | Honeypot / tarpit / fake-response detection    | **DONE** | [doc](docs/improvements/P24.md) | [test](tests/improvements/P24/run.sh) |
-| P15 | Probe diagnostics telemetry                   | PENDING  | —   | —    |
+| P15 | Probe diagnostics telemetry                    | **DONE** | [doc](docs/improvements/P15.md) | [test](tests/improvements/P15/run.sh) |
+| P27 | Parser / memory-safety hardening (CPE double-free fix) | **DONE** | [doc](docs/improvements/P27.md) | [test](tests/improvements/P27/run.sh) |
 | P06 | SARIF / OCSF / STIX exporters                 | PENDING  | —   | —    |
 
 Remaining proposals (P01–P04, P07–P13, P16–P23, P25–P36) are tracked as PENDING in
@@ -43,3 +44,13 @@ Example: `nmap -sU -oJ - 10.0.0.5 | jq '.nmaprun.hosts[].ports[] | select(.relia
 `honeypot-detect.nse` host script flags hosts that falsify responses (excessive open
 ports, uniform/empty banners) with a LIKELY/POSSIBLE verdict and indicators.
 Example: `nmap -sV --script honeypot-detect <target>`
+
+### P15 — Probe diagnostics telemetry
+Per-host `diagnostics` block in JSON: state/reason tallies, reliability buckets and
+derived notes explaining result quality and probable filtering/blackholing.
+Example: `nmap -oJ - 10.0.0.5 | jq '.nmaprun.hosts[0].diagnostics'`
+
+### P27 — Parser / memory-safety hardening
+Fixes a real upstream use-after-free / double-free of service CPE data
+(`serviceDeductions::erase()` freeing borrowed pointers); adds a non-freeing
+`reset()`. Verified crash-free under Valgrind (0 errors).

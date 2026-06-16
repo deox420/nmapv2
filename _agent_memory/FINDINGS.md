@@ -14,3 +14,10 @@
 - CLI option parsing: `nmap.cc` getopt long-options table (search for `"oX"`, `struct option long_options`).
 
 <!-- More findings appended as work proceeds. -->
+
+## Upstream bug fixed (P27): serviceDeductions double-free
+- getServiceDeductions (portlist.cc) shallow-copies port->service (borrowed cpe/product/... ptrs).
+- Reused `serviceDeductions sd` + erase() on a later no-service port frees borrowed ptrs => UAF + double free.
+- Repro on pristine upstream: `nmap -sV -p <open-with-CPE>,<closed>` e.g. python http.server on 8123 + 8124.
+- Fix: serviceDeductions::reset() (non-freeing) at the borrowed-pointer call site.
+- Tools: gdb shows late abort (malloc_consolidate); valgrind pinpoints real UAF/free site. Both installed.
