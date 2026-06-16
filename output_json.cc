@@ -30,6 +30,7 @@
 #include "FingerPrintResults.h"
 
 #include <string>
+#include <map>
 
 extern NmapOps o;
 
@@ -275,6 +276,75 @@ void json_host(const Target *t) {
     }
   }
   fputc(']', jf);
+
+  /* P15: per-host scan diagnostics -- aggregate WHY the results look as they do,
+   * across all ports (including consolidated ignored states). Explains result
+   * quality and surfaces probable filtering/blackholing. */
+  {
+    const PortList *plist = &t->ports;
+    std::map<std::string, int> state_counts, reason_counts;
+    int rel_high = 0, rel_med = 0, rel_low = 0, total = 0, no_response = 0;
+    Port *cur = NULL;
+    Port pt;
+    while ((cur = plist->nextPort(cur, &pt, TCPANDUDPANDSCTP, 0)) != NULL) {
+      total++;
+      const char *st = statenum2str(cur->state);
+      state_counts[st ? st : "unknown"]++;
+      const char *rs = reason_str(cur->reason.reason_id, SINGULAR);
+      reason_counts[rs ? rs : "unknown"]++;
+      if (cur->reason.reason_id == ER_NORESPONSE)
+        no_response++;
+      int r = compute_port_state_reliability(cur->state, &cur->reason, NULL);
+      const char *lv = reliability_level(r);
+      if (lv[0] == 'h') rel_high++;
+      else if (lv[0] == 'm') rel_med++;
+      else rel_low++;
+    }
+    if (total > 0) {
+      fputs(",\"diagnostics\":{", jf);
+      fputs("\"state_counts\":{", jf);
+      bool f1 = true;
+      for (std::map<std::string, int>::const_iterator it = state_counts.begin();
+           it != state_counts.end(); ++it) {
+        if (!f1) fputc(',', jf);
+        f1 = false;
+        fputc('"', jf); jputs_escaped(it->first.c_str());
+        fprintf(jf, "\":%d", it->second);
+      }
+      fputs("},\"reason_counts\":{", jf);
+      bool f2 = true;
+      for (std::map<std::string, int>::const_iterator it = reason_counts.begin();
+           it != reason_counts.end(); ++it) {
+        if (!f2) fputc(',', jf);
+        f2 = false;
+        fputc('"', jf); jputs_escaped(it->first.c_str());
+        fprintf(jf, "\":%d", it->second);
+      }
+      fputs("}", jf);
+      fprintf(jf, ",\"reliability\":{\"high\":%d,\"medium\":%d,\"low\":%d}",
+              rel_high, rel_med, rel_low);
+      /* Derived note: probes overwhelmingly unanswered => probable filtering. */
+      fputs(",\"notes\":[", jf);
+      bool fn = true;
+      if (no_response * 2 >= total && no_response > 0) {
+        fputc('"', jf);
+        jputs_escaped("majority of probed ports gave no response; host may be "
+                      "filtering, rate-limiting or blackholing probes");
+        fputc('"', jf);
+        fn = false;
+      }
+      if (rel_low > rel_high && rel_low > 0) {
+        if (!fn) fputc(',', jf);
+        fputc('"', jf);
+        jputs_escaped("more low-reliability than high-reliability port states; "
+                      "results should be treated with caution");
+        fputc('"', jf);
+        fn = false;
+      }
+      fputc(']', jf);
+      fputc('}', jf); /* diagnostics */
+    }
+  }
 
   /* os (best matches, if any) */
   if (t->FPR != NULL && t->FPR->num_matches > 0) {
