@@ -25,6 +25,7 @@
 #include "Target.h"
 #include "portlist.h"
 #include "portreasons.h"
+#include "port_reliability.h"
 #include "protocols.h"
 #include "FingerPrintResults.h"
 
@@ -233,6 +234,12 @@ void json_host(const Target *t) {
       jkey_int(&pf, "reason_ttl", current->reason.ttl);
 
       plist->getServiceDeductions(current->portno, current->proto, &sd);
+
+      /* P14: per-port state-reliability score (how trustworthy this state is). */
+      int rel = compute_port_state_reliability(current->state, &current->reason, &sd);
+      jkey_int(&pf, "reliability", rel);
+      jkey_str(&pf, "reliability_level", reliability_level(rel));
+
       if (sd.name || sd.service_fp || sd.service_tunnel != SERVICE_TUNNEL_NONE) {
         if (!pf) fputc(',', jf);
         pf = false;
