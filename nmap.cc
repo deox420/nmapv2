@@ -74,6 +74,7 @@
 #include "FPEngine.h"
 #include "idle_scan.h"
 #include "NmapOps.h"
+#include "output_json.h"
 #include "MACLookup.h"
 #include "traceroute.h"
 #include "nmap_tty.h"
@@ -283,7 +284,8 @@ static void printusage() {
          "OUTPUT:\n"
          "  -oN/-oX/-oS/-oG <file>: Output scan in normal, XML, s|<rIpt kIddi3,\n"
          "     and Grepable format, respectively, to the given filename.\n"
-         "  -oA <basename>: Output in the three major formats at once\n"
+         "  -oJ <file>: Output scan in native JSON format ('-' for stdout)\n"
+         "  -oA <basename>: Output in the major formats at once (incl. .json)\n"
          "  -v: Increase verbosity level (use -vv or more for greater effect)\n"
          "  -d: Increase debugging level (use -dd or more for greater effect)\n"
          "  --reason: Display the reason a port is in a particular state\n"
@@ -481,6 +483,7 @@ public:
   double pre_scripttimeout;
 #endif
   char  *machinefilename, *kiddiefilename, *normalfilename, *xmlfilename;
+  char  *jsonfilename; /* P05: native JSON output (-oJ) */
   bool  iflist, decoys, advanced, raw_scan_options;
   char  *exclude_spec, *exclude_file;
   char  *spoofSource, *decoy_arguments;
@@ -559,6 +562,7 @@ void parse_options(int argc, char **argv) {
     {"oS", required_argument, 0, 0},
     {"oH", required_argument, 0, 0},
     {"oX", required_argument, 0, 0},
+    {"oJ", required_argument, 0, 0},
     {"iL", required_argument, 0, 0},
     {"iR", required_argument, 0, 0},
     {"sI", required_argument, 0, 0},
@@ -904,6 +908,12 @@ void parse_options(int argc, char **argv) {
         } else if (strcmp(long_options[option_index].name, "oX") == 0) {
           test_file_name(optarg, long_options[option_index].name);
           delayed_options.xmlfilename = logfilename(optarg, &local_time);
+        } else if (strcmp(long_options[option_index].name, "oJ") == 0) {
+          /* P05: native JSON output. "-" means stdout. */
+          if (strcmp(optarg, "-") != 0)
+            test_file_name(optarg, long_options[option_index].name);
+          delayed_options.jsonfilename = strcmp(optarg, "-") == 0 ?
+            strdup("-") : logfilename(optarg, &local_time);
         } else if (strcmp(long_options[option_index].name, "oA") == 0) {
           char buf[MAXPATHLEN];
           test_file_name(optarg, long_options[option_index].name);
@@ -913,6 +923,8 @@ void parse_options(int argc, char **argv) {
           delayed_options.machinefilename = strdup(buf);
           Snprintf(buf, sizeof(buf), "%s.xml", logfilename(optarg, &local_time));
           delayed_options.xmlfilename = strdup(buf);
+          Snprintf(buf, sizeof(buf), "%s.json", logfilename(optarg, &local_time));
+          delayed_options.jsonfilename = strdup(buf);
         } else if (strcmp(long_options[option_index].name, "thc") == 0) {
           log_write(LOG_STDOUT, "!!Greets to Van Hauser, Plasmoid, Skyper and the rest of THC!!\n");
           exit(0);
@@ -1546,6 +1558,10 @@ void  apply_delayed_options() {
     log_open(LOG_XML, o.append_output, delayed_options.xmlfilename);
     free(delayed_options.xmlfilename);
   }
+  if (delayed_options.jsonfilename) {
+    json_open_output(delayed_options.jsonfilename, o.append_output);
+    free(delayed_options.jsonfilename);
+  }
 
   if (o.verbose > 1)
     o.reason = true;
@@ -2006,6 +2022,10 @@ int nmap_main(int argc, char *argv[]) {
     xml_start_tag("nmaprun", false);
   }
 
+  /* P05: open the native JSON run envelope alongside the XML root. */
+  if (json_output_active())
+    json_run_open(join_quoted(argv, argc).c_str(), timep, mytime, NMAP_VERSION);
+
   log_write(LOG_NORMAL | LOG_MACHINE, "# ");
   log_write(LOG_NORMAL | LOG_MACHINE, "%s %s scan initiated %s as: %s", NMAP_NAME, NMAP_VERSION, mytime, join_quoted(argv, argc).c_str());
   log_write(LOG_NORMAL | LOG_MACHINE, "\n");
@@ -2308,6 +2328,8 @@ int nmap_main(int argc, char *argv[]) {
                   currenths->NameIP(hostname, sizeof(hostname)));
         log_write(LOG_MACHINE, "Host: %s (%s)\tStatus: Timeout\n",
                   currenths->targetipstr(), currenths->HostName());
+        if (json_output_active())
+          json_host(currenths);
       } else {
         /* --open means don't show any hosts without open ports. */
         if (o.openOnly() && !currenths->ports.hasOpenPorts())
@@ -2331,6 +2353,8 @@ int nmap_main(int argc, char *argv[]) {
         log_write(LOG_PLAIN | LOG_MACHINE, "\n");
         xml_end_tag(); /* host */
         xml_newline();
+        if (json_output_active())
+          json_host(currenths);
       }
     }
     log_flush_all();

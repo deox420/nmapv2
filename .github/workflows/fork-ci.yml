@@ -1,0 +1,46 @@
+name: fork CI (linux build + smoke)
+
+# Focused, meaningful CI for the enhanced nmap fork: build on Linux and run the
+# no-regression smoke test plus the per-improvement tests. This is the PR gate;
+# upstream's full multiplatform release autobuild (build.yml) is manual-dispatch only.
+
+on:
+  push:
+    branches:
+      - main
+      - "claude/**"
+      - "feat/**"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: fork-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev zlib1g-dev
+
+      - name: Configure
+        run: ./configure --without-zenmap --without-ndiff
+
+      - name: Build
+        run: make -j$(nproc)
+
+      - name: Smoke test (no-regression)
+        run: ./tests/improvements/smoke/run.sh
+
+      - name: Improvement tests
+        run: |
+          if [ -x tests/improvements/run-all.sh ]; then
+            ./tests/improvements/run-all.sh
+          else
+            echo "no aggregate improvement runner yet; smoke test covered above"
+          fi

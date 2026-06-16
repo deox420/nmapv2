@@ -115,7 +115,13 @@ void random_port_cheat(u16 *ports, int portcount);
 struct serviceDeductions {
   serviceDeductions();
   // Free any strings that need to be freed and set all pointers to null.
+  // Only call this on a serviceDeductions that OWNS its strings.
   void erase();
+  // Reset all fields to defaults WITHOUT freeing, for when the struct holds
+  // borrowed or uninitialized pointers (e.g. after getServiceDeductions copied
+  // them from a Port). Using erase() in that case would free memory still owned
+  // by the Port, causing a use-after-free / double-free (nmapv2 fork, P27).
+  void reset();
   void populateFullVersionString(char *buf, size_t n) const;
 
   const char *name; // will be NULL if can't determine
