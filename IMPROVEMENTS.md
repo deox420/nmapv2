@@ -25,7 +25,7 @@ Fork base: upstream Nmap `@4c45907f` (see `.upstream-nmap-commit`). License: NPS
 | P24 | Honeypot / tarpit / fake-response detection    | **DONE** | [doc](docs/improvements/P24.md) | [test](tests/improvements/P24/run.sh) |
 | P15 | Probe diagnostics telemetry                    | **DONE** | [doc](docs/improvements/P15.md) | [test](tests/improvements/P15/run.sh) |
 | P27 | Parser / memory-safety hardening (CPE double-free fix) | **DONE** | [doc](docs/improvements/P27.md) | [test](tests/improvements/P27/run.sh) |
-| P06 | SARIF / OCSF / STIX exporters                 | PENDING  | —   | —    |
+| P06 | SARIF / OCSF / STIX exporters                  | **DONE** | [doc](docs/improvements/P06.md) | [test](tests/improvements/P06/run.sh) |
 
 Remaining proposals (P01–P04, P07–P13, P16–P23, P25–P36) are tracked as PENDING in
 `_agent_memory/STATE.json` and will be added to this table as they are completed.
@@ -54,3 +54,7 @@ Example: `nmap -oJ - 10.0.0.5 | jq '.nmaprun.hosts[0].diagnostics'`
 Fixes a real upstream use-after-free / double-free of service CPE data
 (`serviceDeductions::erase()` freeing borrowed pointers); adds a non-freeing
 `reset()`. Verified crash-free under Valgrind (0 errors).
+
+### P06 — Exporters to security standards (SARIF / OCSF / STIX)
+`tools/nmap-export.py` converts `-oJ` JSON to SARIF 2.1.0, OCSF and STIX 2.1.
+Example: `nmap -sV -oJ - host | tools/nmap-export.py -f sarif`

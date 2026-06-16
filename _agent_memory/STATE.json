@@ -5,11 +5,11 @@
   "work_branch": "claude/nmap-enhanced-fork-yn7y8t",
   "upstream_nmap": "https://github.com/nmap/nmap.git",
   "upstream_nmap_commit": "4c45907f76511ff92d21d71acef76f9e0a4cde80",
-  "proposal_actual": "P06",
+  "proposal_actual": "(session pause)",
   "fase_actual": "pending-start",
   "rama": "claude/nmap-enhanced-fork-yn7y8t",
   "ultimo_commit_sha": null,
-  "global_pct": 14,
+  "global_pct": 17,
   "session_mode": "Foundation + depth-first (user-chosen 2026-06-15)",
   "memory_location_note": "Memory kept INSIDE the repo (committed) because this is an ephemeral cloud container — only committed+pushed content survives context renewal / container reclaim. This adapts the prompt's 'outside the repo' instruction to the actual environment.",
   "propuestas": {
@@ -18,7 +18,7 @@
     "P03": "PENDING",
     "P04": "PENDING",
     "P05": "DONE",
-    "P06": "PENDING",
+    "P06": "DONE",
     "P07": "PENDING",
     "P08": "PENDING",
     "P09": "PENDING",
@@ -57,5 +57,5 @@
     "P15",
     "P06"
   ],
-  "notas_para_mi_yo_futuro": "DONE so far: P05(JSON -oJ), P14(reliability), P24(honeypot-detect.nse), P15(JSON diagnostics), P27(fixed upstream serviceDeductions double-free via reset()). NEXT: P06 (SARIF/OCSF/STIX exporters) building on P05 JSON - likely a python post-processor under tools/ that converts -oJ JSON to SARIF/OCSF/STIX, OR native -o flags. Prefer a documented converter script (tools/nmap-export.py) reading nmaprun JSON -> SARIF 2.1.0 / OCSF / STIX 2.1 bundles, with tests. Build: ./configure --without-zenmap --without-ndiff && make -j4. Tests: bash tests/improvements/run-all.sh (some need root). fork-ci green; PR #1 draft. Lab: docker registry blocked->python services. valgrind/gdb available for mem debugging."
+  "notas_para_mi_yo_futuro": "DONE: P05(JSON -oJ), P06(SARIF/OCSF/STIX via tools/nmap-export.py), P14(reliability), P15(JSON diagnostics), P24(honeypot-detect.nse), P27(fixed upstream serviceDeductions double-free). 6 proposals + foundation, all build+test+verified vs localhost. CI fix: P15 test now accepts conn-refused (non-root connect scan) OR reset (root SYN). NEXT candidates by value: P26 (rate-limit/blackhole detection, builds on P15 no-response notes), P13 (service-probes/os-db updates), P08 (TLS/ALPN/HTTP2 via NSE), P20 (native diff). Build: ./configure --without-zenmap --without-ndiff && make -j4. Tests: bash tests/improvements/run-all.sh (UDP cases need root). fork-ci is the gate (runs as NON-root -> closed ports = conn-refused). PR #1 draft."
 }
