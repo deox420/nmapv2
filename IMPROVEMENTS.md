@@ -21,7 +21,7 @@ Fork base: upstream Nmap `@4c45907f` (see `.upstream-nmap-commit`). License: NPS
 | ID  | Improvement                                   | Status   | Doc | Test |
 |-----|-----------------------------------------------|----------|-----|------|
 | P05 | Native JSON output (`-oJ`)                     | **DONE** | [doc](docs/improvements/P05.md) | [test](tests/improvements/P05/run.sh) |
-| P14 | Per-detection confidence / reliability scoring | PENDING  | —   | —    |
+| P14 | Per-detection confidence / reliability scoring | **DONE** | [doc](docs/improvements/P14.md) | [test](tests/improvements/P14/run.sh) |
 | P24 | Honeypot / tarpit detection                   | PENDING  | —   | —    |
 | P15 | Probe diagnostics telemetry                   | PENDING  | —   | —    |
 | P06 | SARIF / OCSF / STIX exporters                 | PENDING  | —   | —    |
@@ -33,3 +33,8 @@ Remaining proposals (P01–P04, P07–P13, P16–P23, P25–P36) are tracked as 
 Makes JSON a first-class Nmap output format produced directly by the engine, with a
 stable documented schema and safe escaping of untrusted banners.
 Example: `nmap -sV -oJ - 127.0.0.1 | jq '.nmaprun.hosts[].ports[]'`
+
+### P14 — Per-detection confidence / reliability scoring
+Adds a 0–10 `reliability` score and `high`/`medium`/`low` level to each port,
+distinguishing states proven by a response from those merely inferred from silence.
+Example: `nmap -sU -oJ - 10.0.0.5 | jq '.nmaprun.hosts[].ports[] | select(.reliability_level=="low")'`
