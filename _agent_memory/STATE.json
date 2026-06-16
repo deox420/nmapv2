@@ -5,11 +5,11 @@
   "work_branch": "claude/nmap-enhanced-fork-yn7y8t",
   "upstream_nmap": "https://github.com/nmap/nmap.git",
   "upstream_nmap_commit": "4c45907f76511ff92d21d71acef76f9e0a4cde80",
-  "proposal_actual": "P24",
+  "proposal_actual": "P15",
   "fase_actual": "pending-start",
   "rama": "claude/nmap-enhanced-fork-yn7y8t",
   "ultimo_commit_sha": null,
-  "global_pct": 6,
+  "global_pct": 8,
   "session_mode": "Foundation + depth-first (user-chosen 2026-06-15)",
   "memory_location_note": "Memory kept INSIDE the repo (committed) because this is an ephemeral cloud container — only committed+pushed content survives context renewal / container reclaim. This adapts the prompt's 'outside the repo' instruction to the actual environment.",
   "propuestas": {
@@ -36,7 +36,7 @@
     "P21": "PENDING",
     "P22": "PENDING",
     "P23": "PENDING",
-    "P24": "PENDING",
+    "P24": "DONE",
     "P25": "PENDING",
     "P26": "PENDING",
     "P27": "PENDING",
@@ -57,5 +57,5 @@
     "P15",
     "P06"
   ],
-  "notas_para_mi_yo_futuro": "P05 + P14 DONE. P14 = per-port reliability scoring in port_reliability.{cc,h}, surfaced in JSON as reliability(0-10)+reliability_level; reusable by P24/P25. NEXT: start P24 (honeypot/tarpit detection) phase A - likely an NSE script + heuristics building on P14's reliability signal (many 'open' ports with weak evidence, identical banners, tarpit slow responses). Build: ./configure --without-zenmap --without-ndiff && make -j4. Tests: bash tests/improvements/run-all.sh (UDP P14 case needs root). Lab: docker registry blobs blocked (403) -> use python local services. fork-ci.yml green PR gate; upstream build.yml manual-only. PR #1 draft."
+  "notas_para_mi_yo_futuro": "P05,P14,P24 DONE. P24=scripts/honeypot-detect.nse (excessive open + uniform banners -> LIKELY/POSSIBLE verdict); script.db regenerated. NEXT: P15 (probe diagnostics telemetry - why a probe failed). Idea: capture per-port/per-probe reason already exists; P15 could add a --reason-style structured 'why' to JSON (e.g., probes sent, responses, timeouts) or a debug telemetry channel. Keep self-contained + testable. Build: ./configure --without-zenmap --without-ndiff && make -j4. Tests: bash tests/improvements/run-all.sh. fork-ci green; PR #1 draft. docker registry blocked->python services."
 }
