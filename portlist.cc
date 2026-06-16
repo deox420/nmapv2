@@ -119,6 +119,25 @@ void serviceDeductions::erase() {
   this->dtype = SERVICE_DETECTION_TABLE;
 }
 
+/* Reset all fields to defaults WITHOUT freeing anything. Use this when the
+ * struct may hold borrowed or uninitialized pointers (copied from a Port by
+ * getServiceDeductions); calling erase() there would free memory the Port still
+ * owns, leading to a use-after-free and double-free (nmapv2 fork, P27). */
+void serviceDeductions::reset() {
+  this->name = NULL;
+  this->name_confidence = 0;
+  this->product = NULL;
+  this->version = NULL;
+  this->extrainfo = NULL;
+  this->hostname = NULL;
+  this->ostype = NULL;
+  this->devicetype = NULL;
+  this->cpe.clear();
+  this->service_tunnel = SERVICE_TUNNEL_NONE;
+  this->service_fp = NULL;
+  this->dtype = SERVICE_DETECTION_TABLE;
+}
+
 void Port::freeScriptResults(void)
 {
 #ifndef NOLUA
@@ -266,8 +285,10 @@ void PortList::getServiceDeductions(u16 portno, int protocol, struct serviceDedu
   if (port == NULL || port->service == NULL) {
     const struct nservent *service;
 
-    /* Look up the service name. */
-    sd->erase();
+    /* Look up the service name. sd may hold pointers borrowed from a previously
+     * inspected Port (getServiceDeductions does a shallow copy); reset without
+     * freeing, since erase() would free memory still owned by that Port. */
+    sd->reset();
     service = nmap_getservbyport(portno, protocol);
     if (service != NULL)
       sd->name = service->s_name;
