@@ -26,7 +26,9 @@ d = json.load(open(sys.argv[1]))["nmaprun"]["hosts"][0]["diagnostics"]
 sc, rc, rel = d["state_counts"], d["reason_counts"], d["reliability"]
 assert sc.get("open", 0) >= 1, sc
 assert sc.get("closed", 0) >= 1, sc
-assert "syn-ack" in rc and "reset" in rc, rc
+# open port -> syn-ack; closed -> reset (SYN scan/root) or conn-refused (connect scan/non-root)
+assert "syn-ack" in rc, rc
+assert ("reset" in rc or "conn-refused" in rc), rc
 assert sum(sc.values()) == 7, sc            # 7 ports scanned
 assert rel["high"] >= 1, rel
 print("  ok: state_counts=%s reason_counts=%s reliability=%s" % (sc, rc, rel))
